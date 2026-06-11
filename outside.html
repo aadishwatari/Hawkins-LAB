@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stranger Runner: Hawkins 1984</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            cursor: none;
+        }
+
+        body {
+            background-color: #020003;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        #game-view {
+            position: relative;
+            width: 100vw;
+            height: 56.25vw; /* 16:9 Aspect Ratio */
+            max-height: 100vh;
+            max-width: 177.78vh;
+            background-color: #06020b;
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(255, 0, 50, 0.5);
+        }
+
+        /* High-fidelity Canvas Sky replacing cheap gradients */
+        #sky-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 75%;
+            z-index: 1;
+            image-rendering: pixelated;
+        }
+
+        /* Dark, textured foreground layer silhouettes */
+        #silhouette-bg {
+            position: absolute;
+            bottom: 22%;
+            left: 0;
+            width: 200%;
+            height: 25%;
+            background: linear-gradient(transparent 40%, #06020b 95%),
+                        repeating-linear-gradient(90deg, transparent 0px, transparent 80px, #0e0514 80px, #0e0514 160px);
+            background-size: 50% 100%;
+            background-repeat: repeat-x;
+            z-index: 2;
+            opacity: 0.8;
+            animation: parallelScroll 14s linear infinite;
+        }
+
+        /* Atmospheric ash and spores falling */
+        #upside-down-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(255, 0, 50, 0.2) 2px, transparent 3px),
+                radial-gradient(circle at 45% 35%, rgba(255, 255, 255, 0.15) 1px, transparent 2px),
+                radial-gradient(circle at 75% 75%, rgba(255, 0, 50, 0.25) 3px, transparent 4px),
+                radial-gradient(circle at 85% 25%, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+            background-size: 500px 500px;
+            animation: floatParticles 6s linear infinite;
+        }
+
+        @keyframes floatParticles {
+            0% { background-position: 0px 0px; }
+            100% { background-position: -150px -500px; }
+        }
+
+        /* Main Scrolling Ground Floor */
+        #ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 22%;
+            background: repeating-linear-gradient(90deg, #09050d 0px, #09050d 25px, #130a1c 25px, #130a1c 50px);
+            border-top: 5px solid #ff0033;
+            box-shadow: inset 0 4px 0 #2b163e, 0 0 20px rgba(255, 0, 50, 0.4);
+            z-index: 4;
+            animation: parallelScroll 2s linear infinite;
+        }
+
+        @keyframes parallelScroll {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+
+        /* ---------------- ACTORS ---------------- */
+
+        #mindflayer {
+            position: absolute;
+            bottom: 17%;
+            left: -2%;
+            width: 32%;
+            height: 68%;
+            background-image: url('mindflayer.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom left;
+            filter: drop-shadow(0 0 30px #ff0033);
+            z-index: 5;
+        }
+
+        /* Exact T-Rex scaling */
+        #mc {
+            position: absolute;
+            bottom: 18%;
+            left: 36%;
+            width: 5%; 
+            height: 10%; 
+            background-image: url('mc.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            z-index: 6;
+        }
+
+        .obstacle {
+            position: absolute;
+            bottom: 18%;
+            width: 3.5%;
+            height: 8%;
+            background: #0f0205;
+            border: 3px solid #ff0044;
+            border-radius: 4px 12px 2px 4px;
+            box-shadow: 0 0 25px #ff0044, inset 0 0 10px #ff0044;
+            z-index: 5;
+        }
+
+        /* ---------------- HIGH-TECH NEON HUD ---------------- */
+
+        #hud {
+            position: absolute;
+            top: 5%;
+            left: 4%;
+            right: 4%;
+            height: 15%;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Courier New', Courier, monospace;
+            letter-spacing: 2px;
+        }
+
+        .main-score-wrap {
+            border: 3px solid #ff0044;
+            padding: 6px 20px;
+            background: rgba(4, 1, 8, 0.95);
+            box-shadow: 0 0 20px rgba(255, 0, 68, 0.5);
+        }
+
+        .score-title {
+            color: #ff0044;
+            font-size: 1.8vw;
+            font-weight: 900;
+            text-shadow: 0 0 10px #ff0044;
+        }
+
+        .score-digits {
+            color: #fff;
+            font-size: 3.2vw;
+            font-weight: bold;
+            text-shadow: 0 0 5px #fff;
+        }
+
+        .right-stats {
+            text-align: right;
+            color: #ffffff;
+            font-size: 1.5vw;
+            text-shadow: 0 0 8px #ff0044;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        #prompt {
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 1.6vw;
+            font-family: monospace;
+            text-shadow: 0 0 12px #ff0033;
+            z-index: 10;
+            animation: flash 1s steps(2, start) infinite;
+        }
+
+        @keyframes flash { to { visibility: hidden; } }
+
+        .jumping {
+            animation: retroJump 0.55s cubic-bezier(0.25, 1, 0.4, 1);
+        }
+
+        @keyframes retroJump {
+            0% { bottom: 18%; }
+            45% { bottom: 52%; }
+            55% { bottom: 52%; }
+            100% { bottom: 18%; }
+        }
+
+        /* CRT Screening & Post Processing */
+        #game-view::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
+            background-size: 100% 4px;
+            z-index: 20;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .shake-screen {
+            animation: severeVibration 0.1s linear infinite !important;
+        }
+
+        @keyframes severeVibration {
+            0% { transform: translate(3px, 3px); }
+            50% { transform: translate(-3px, -3px); }
+            100% { transform: translate(3px, -3px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-view">
+        <canvas id="sky-canvas"></canvas>
+        
+        <div id="silhouette-bg"></div>
+        <div id="upside-down-particles"></div>
+        
+        <div id="hud">
+            <div class="hud-panel main-score-wrap">
+                <div class="score-title">SCORE</div>
+                <div class="score-digits" id="score">000000</div>
+            </div>
+            <div class="hud-panel right-stats">
+                <div>HIGHSCORE: 010890</div>
+                <div>STAGE 1-3: HAWKINS FOREST</div>
+            </div>
+        </div>
+
+        <div id="prompt">[SPACEBAR] TO JUMP</div>
+
+        <div id="mindflayer"></div>
+        <div id="mc"></div>
+        <div id="ground"></div>
+    </div>
+
+    <script>
+        const mc = document.getElementById('mc');
+        const flayer = document.getElementById('mindflayer');
+        const ground = document.getElementById('ground');
+        const skyline = document.getElementById('silhouette-bg');
+        const gameView = document.getElementById('game-view');
+        const scoreDisplay = document.getElementById('score');
+        
+        // Canvas Setup for the premium Pixel Art Sky
+        const canvas = document.getElementById('sky-canvas');
+        const ctx = canvas.getContext('2d');
+        let cloudOffset = 0;
+
+        function resizeCanvas() {
+            canvas.width = 400;  // Intentionally low resolution for perfect retro scaling
+            canvas.height = 225;
+            ctx.imageSmoothingEnabled = false;
+        }
+        resizeCanvas();
+
+        // Draw layered pixel clouds with crimson thick outlines
+        function drawPixelSky() {
+            ctx.fillStyle = '#06020b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            cloudOffset += 0.2;
+            if (cloudOffset > 200) cloudOffset = 0;
+
+            // Draw base sky warm red haze
+            let haze = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            haze.addColorStop(0, '#4a0210');
+            haze.addColorStop(0.6, '#1f020a');
+            haze.addColorStop(1, '#06020b');
+            ctx.fillStyle = haze;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Cloud cluster logic
+            function drawCloudLayer(speed, baseColor, outlineColor, yHeight) {
+                ctx.fillStyle = outlineColor;
+                for (let i = -1; i < 3; i++) {
+                    let x = (i * 200) - (cloudOffset * speed % 200);
+                    // Draw bulky block structures mimicking the reference image
+                    ctx.fillRect(x, yHeight - 4, 120, 45);
+                    ctx.fillRect(x + 20, yHeight - 12, 80, 50);
+                    ctx.fillRect(x - 15, yHeight + 4, 150, 30);
+                }
+                ctx.fillStyle = baseColor;
+                for (let i = -1; i < 3; i++) {
+                    let x = (i * 200) - (cloudOffset * speed % 200);
+                    ctx.fillRect(x + 2, yHeight, 116, 37);
+                    ctx.fillRect(x + 22, yHeight - 8, 76, 42);
+                    ctx.fillRect(x - 11, yHeight + 6, 142, 24);
+                }
+            }
+
+            // Layer 1: Distant dark clouds
+            drawCloudLayer(0.6, '#24040c', '#3d0714', 30);
+            // Layer 2: Main vivid red structural clouds
+            drawCloudLayer(1.2, '#6b0217', '#b30024', 15);
+        }
+
+        // Gameplay Engine
+        let isJumping = false;
+        let score = 0;
+        let gameActive = true;
+        let currentSpeed = 1.3;
+        let lastSpawn = 0;
+
+        function triggerJump() {
+            if (!isJumping && gameActive) {
+                isJumping = true;
+                mc.classList.add('jumping');
+                document.getElementById('prompt').style.display = 'none';
+                setTimeout(() => {
+                    mc.classList.remove('jumping');
+                    isJumping = false;
+                }, 550);
+            }
+        }
+
+        document.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') triggerJump(); });
+        document.addEventListener('touchstart', triggerJump);
+
+        function spawnObstacle() {
+            if (!gameActive) return;
+
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            
+            let positionX = 105; 
+            obstacle.style.left = `${positionX}%`;
+            gameView.appendChild(obstacle);
+
+            let moveInterval = setInterval(() => {
+                if (!gameActive) {
+                    clearInterval(moveInterval);
+                    return;
+                }
+
+                positionX -= currentSpeed;
+                obstacle.style.left = `${positionX}%`;
+
+                if (positionX < -10) {
+                    obstacle.remove();
+                    clearInterval(moveInterval);
+                    updateScore();
+                }
+
+                let mcRect = mc.getBoundingClientRect();
+                let obsRect = obstacle.getBoundingClientRect();
+
+                if (obsRect.left < (mcRect.right - 8) && 
+                    obsRect.right > (mcRect.left + 8) && 
+                    mcRect.bottom > obsRect.top) {
+                    executeGameOver();
+                }
+            }, 1000 / 60);
+        }
+
+        function updateScore() {
+            score += 100;
+            scoreDisplay.innerText = score.toString().padStart(6, '0');
+            if (score % 600 === 0 && currentSpeed < 2.8) {
+                currentSpeed += 0.18;
+            }
+        }
+
+        function executeGameOver() {
+            gameActive = false;
+            ground.style.animationPlayState = 'paused';
+            skyline.style.animationPlayState = 'paused';
+            document.getElementById('upside-down-particles').style.animationPlayState = 'paused';
+
+            // Clean kill tracking
+            flayer.style.transition = 'left 0.22s cubic-bezier(0.215, 0.610, 0.355, 1)';
+            flayer.style.left = '25%';
+            mc.style.filter = "brightness(0.1) drop-shadow(0 0 12px #ff0000)";
+
+            gameView.classList.add('shake-screen');
+            gameView.style.boxShadow = "inset 0 0 200px #ff0011, 0 0 100px #ff0011";
+
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1200);
+        }
+
+        function engineLoop(timestamp) {
+            drawPixelSky(); // Redraw custom sky every frame updates
+            
+            if (gameActive) {
+                if (!lastSpawn) lastSpawn = timestamp;
+                let elapsed = timestamp - lastSpawn;
+
+                let triggerWindow = Math.max(750, 2000 - (currentSpeed * 400));
+                if (elapsed > triggerWindow + (Math.random() * 900)) {
+                    spawnObstacle();
+                    lastSpawn = timestamp;
+                }
+            }
+            requestAnimationFrame(engineLoop);
+        }
+
+        requestAnimationFrame(engineLoop);
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>

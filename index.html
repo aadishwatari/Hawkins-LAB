@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAWKINS NATIONAL LABORATORY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chonburi&family=Saira+Semi+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            /* Fallback color if bg.png is missing */
+            background-color: #030303; 
+            /* Custom Background Configuration */
+            background-image: linear-gradient(rgba(3, 3, 3, 0.75), rgba(3, 3, 3, 0.85)), url('bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            color: #e50914;
+            font-family: 'Saira Semi Condensed', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* CRT Scanline overlay */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
+            z-index: 10;
+            background-size: 100% 5px;
+            pointer-events: none;
+        }
+
+        /* Subtle screen flicker */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: rgba(229, 9, 20, 0.02);
+            opacity: 0;
+            z-index: 11;
+            pointer-events: none;
+            animation: flicker 0.2s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.01; }
+            50% { opacity: 0.04; }
+            100% { opacity: 0.01; }
+        }
+
+        .container {
+            text-align: center;
+            z-index: 2;
+            padding: 40px;
+            position: relative;
+        }
+
+        /* Iconic Stranger Things Floating Neon Borders */
+        .title-wrapper {
+            position: relative;
+            padding: 35px 0;
+            margin-bottom: 40px;
+        }
+
+        .title-wrapper::before, .title-wrapper::after {
+            content: "";
+            position: absolute;
+            left: 5%;
+            width: 90%;
+            height: 5px;
+            background: #e50914;
+            box-shadow: 0 0 15px #e50914, 0 0 30px #b0060f, 0 0 50px #700207;
+            animation: neonPulse 4s ease-in-out infinite alternate;
+        }
+
+        .title-wrapper::before { top: 0; }
+        .title-wrapper::after { bottom: 0; }
+
+        /* Title Style */
+        h1 {
+            font-family: 'Chonburi', serif;
+            font-size: 4.5rem;
+            line-height: 0.95;
+            text-transform: uppercase;
+            letter-spacing: -2px;
+            color: rgba(3, 3, 3, 0.9);
+            -webkit-text-stroke: 2px #e50914;
+            text-shadow: 0 0 10px rgba(229, 9, 20, 0.6), 0 0 30px rgba(229, 9, 20, 0.4);
+            animation: neonPulse 4s ease-in-out infinite alternate;
+        }
+
+        h2 {
+            font-family: 'Saira Semi Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #b0b0b0;
+            margin-top: 15px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        @keyframes neonPulse {
+            0% {
+                text-shadow: 0 0 8px rgba(229, 9, 20, 0.6), 0 0 25px rgba(229, 9, 20, 0.4);
+                box-shadow: 0 0 10px #b0060f, 0 0 30px #700207;
+                filter: brightness(0.9);
+            }
+            100% {
+                text-shadow: 0 0 15px rgba(229, 9, 20, 0.9), 0 0 40px rgba(229, 9, 20, 0.7);
+                box-shadow: 0 0 20px #e50914, 0 0 45px #b0060f;
+                filter: brightness(1.1);
+            }
+        }
+
+        /* Button */
+        .btn {
+            background: rgba(3, 3, 3, 0.6);
+            border: 2px solid #e50914;
+            color: #e50914;
+            font-family: 'Saira Semi Condensed', sans-serif;
+            font-weight: bold;
+            font-size: 1.3rem;
+            padding: 12px 40px;
+            cursor: pointer;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
+            transition: all 0.3s ease;
+            outline: none;
+            backdrop-filter: blur(2px);
+        }
+
+        .btn:hover {
+            background-color: #e50914;
+            color: #030303;
+            box-shadow: 0 0 30px #e50914;
+            text-shadow: none;
+        }
+
+        /* Loading Box */
+        .loading-box {
+            display: none;
+            width: 350px;
+            margin: 0 auto;
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: #e50914;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .progress-bar {
+            width: 100%;
+            border: 2px solid #e50914;
+            padding: 3px;
+            background: #000;
+        }
+
+        .progress-fill {
+            height: 15px;
+            width: 0%;
+            background-color: #e50914;
+            box-shadow: 0 0 15px #e50914;
+            transition: width 0.08s linear;
+        }
+
+        /* Spores */
+        .spore {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgm" src="bgm.mp3" loop></audio>
+
+    <div class="container">
+        <div id="menu-screen">
+            <div class="title-wrapper">
+                <h1>Hawkins<br>Lab</h1>
+            </div>
+            <h2>U.S. Department of Energy</h2>
+            <button class="btn" id="start-btn" style="margin-top: 30px;">Enter Portal</button>
+        </div>
+
+        <div id="loading-screen" class="loading-box">
+            <div class="status-text" id="status-message">WARNING: ACCESSING CLASS-4 RIFT</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="status-text" id="percentage-text" style="margin-top: 20px; font-size: 1.2rem;">0%</div>
+        </div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const menuScreen = document.getElementById('menu-screen');
+        const loadingScreen = document.getElementById('loading-screen');
+        const progressFill = document.getElementById('progress-fill');
+        const percentageText = document.getElementById('percentage-text');
+        const statusMessage = document.getElementById('status-message');
+        const bgm = document.getElementById('bgm');
+
+        const statusPhases = [
+            "ISOLATING MAGNETIC FIELD...",
+            "OVERRIDING SECURITY GATE...",
+            "WARNING: MOTHER GATE BREACHED...",
+            "ENTERING THE UPSIDE DOWN..."
+        ];
+
+        startBtn.addEventListener('click', () => {
+            // Play the background music safely upon user interaction
+            bgm.play().catch(error => {
+                console.log("Audio playback failed or was prevented:", error);
+            });
+
+            menuScreen.style.display = 'none';
+            loadingScreen.style.display = 'block';
+
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    statusMessage.innerText = "GATE OPEN.";
+                    
+                    setTimeout(() => {
+                        window.location.href = 'portal.html';
+                    }, 600);
+                } else {
+                    width++;
+                    progressFill.style.width = width + '%';
+                    percentageText.innerText = width + '%';
+
+                    if (width === 25) statusMessage.innerText = statusPhases[0];
+                    if (width === 50) statusMessage.innerText = statusPhases[1];
+                    if (width === 75) statusMessage.innerText = statusPhases[2];
+                    if (width === 90) statusMessage.innerText = statusPhases[3];
+                }
+            }, 40); 
+        });
+
+        // Floating dust particles
+        function createSpore() {
+            const spore = document.createElement('div');
+            spore.classList.add('spore');
+            
+            const size = Math.random() * 5 + 1;
+            spore.style.width = size + 'px';
+            spore.style.height = size + 'px';
+            
+            spore.style.left = Math.random() * 100 + 'vw';
+            spore.style.bottom = '-10px';
+            
+            const duration = Math.random() * 6 + 6;
+            spore.style.animation = `floatUp ${duration}s linear infinite`;
+            
+            document.body.appendChild(spore);
+            
+            setTimeout(() => {
+                spore.remove();
+            }, duration * 1000);
+        }
+
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes floatUp {
+                0% {
+                    transform: translateY(0) translateX(0);
+                    opacity: 0;
+                }
+                15% { opacity: 0.6; }
+                85% { opacity: 0.6; }
+                100% {
+                    transform: translateY(-105vh) translateX(${Math.random() * 60 - 30}px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        setInterval(createSpore, 250);
+    </script>
+</body>
+</html>

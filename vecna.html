@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stranger Things Retro Battle</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        body {
+            background-color: #050206;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #game-container {
+            width: 600px;
+            height: 450px;
+            border: 4px solid #8b0000;
+            box-shadow: 0 0 20px #ff0000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* CRT Scanline Overlay Effect */
+        #game-container::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 5;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Battlefield Screen */
+        #battlefield {
+            flex: 2;
+            background: linear-gradient(to bottom, #0a010c, #1a020d, #050b07);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Screen Shake Animation */
+        .shake {
+            animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        /* HUD / Health Bars */
+        .hud {
+            position: absolute;
+            background: rgba(15, 10, 15, 0.95);
+            border: 3px solid #8b0000;
+            color: #ff3333;
+            padding: 8px;
+            width: 220px;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(255,0,0,0.3);
+            z-index: 2;
+        }
+
+        #vecna-hud { top: 15px; left: 15px; }
+        #player-hud { bottom: 25px; right: 15px; color: #00ffcc; border-color: #00ffcc; box-shadow: 0 0 10px rgba(0,255,204,0.3); }
+
+        .hp-bar-bg {
+            background: #222;
+            width: 100%;
+            height: 12px;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+
+        .hp-bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.5s ease;
+        }
+        #vecna-hp { background: #ff3333; }
+        #player-hp { background: #00ffcc; }
+
+        /* Sprites Styling */
+        .sprite {
+            position: absolute;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 1;
+        }
+
+        #vecna-sprite {
+            width: 120px;
+            height: 120px;
+            top: 40px;
+            right: 80px;
+            background-image: url('vecna.png'); 
+            background-color: rgba(255, 0, 0, 0.15); 
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+        }
+
+        #player-sprite {
+            width: 140px;
+            height: 140px;
+            bottom: 10px;
+            left: 60px;
+            background-image: url('el.png'); 
+            background-color: rgba(0, 255, 204, 0.15); 
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+        }
+
+        /* Max's Cryptic Headphones - Moved to the corner of the entire page */
+        #headphones-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #17111c;
+            border: 3px solid #ff00ff;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px #ff00ff;
+            transition: all 0.3s ease;
+        }
+
+        #headphones-btn:hover {
+            background-color: #ff00ff;
+            box-shadow: 0 0 25px #ff00ff;
+            transform: scale(1.1);
+        }
+
+        #headphones-btn svg {
+            width: 32px;
+            height: 32px;
+            fill: #ff00ff;
+            transition: fill 0.3s ease;
+        }
+
+        #headphones-btn:hover svg {
+            fill: #000;
+        }
+
+        /* Pulsing animation when music is active */
+        .pulse-active {
+            animation: headphonePulse 1s infinite alternate;
+        }
+
+        @keyframes headphonePulse {
+            from { box-shadow: 0 0 15px #ff00ff; }
+            to { box-shadow: 0 0 30px #00ffcc, 0 0 10px #ff00ff; }
+        }
+
+        /* Platforms */
+        .platform {
+            position: absolute;
+            background: rgba(20, 5, 5, 0.8);
+            border-radius: 50%;
+            transform: scaleY(0.3);
+            z-index: 0;
+        }
+        #vecna-plat { width: 160px; height: 160px; top: 110px; right: 60px; border: 4px dotted #ff0000; box-shadow: 0 0 15px #ff0000; }
+        #player-plat { width: 200px; height: 200px; bottom: -40px; left: 30px; border: 4px dotted #00ffcc; box-shadow: 0 0 15px #00ffcc; }
+
+        /* UI Control Panel */
+        #ui-panel {
+            flex: 1;
+            background-color: #0f0a12;
+            border-top: 4px solid #8b0000;
+            display: flex;
+            z-index: 2;
+        }
+
+        #text-box {
+            flex: 1.3;
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.4;
+            color: #eee;
+            border-right: 4px solid #8b0000;
+            display: flex;
+            align-items: center;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
+
+        #menu-box, #attack-box {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+            background-color: #8b0000;
+        }
+
+        #attack-box { display: none; } 
+
+        .menu-btn {
+            background-color: #17111c;
+            color: #fff;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .menu-btn:hover { 
+            background-color: #ff3333; 
+            color: #000;
+            text-shadow: none;
+        }
+        
+        #btn-fight { color: #ff3333; } 
+        #btn-bag { color: #ffcc00; }   
+        #btn-poke { color: #00ffcc; }  
+        #btn-run { color: #ff00ff; }   
+        
+        .atk-btn { background-color: #1c1424; color: #ff5555; }
+        #btn-cancel { background-color: #2b0202; color: #bbb; }
+
+        /* End Game Screen Overlays */
+        .end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            text-align: center;
+        }
+
+        #victory-screen { background-color: rgba(5, 20, 15, 0.95); color: #00ffcc; text-shadow: 0 0 10px #00ffcc; }
+        #defeat-screen { background-color: rgba(20, 5, 5, 0.95); color: #ff3333; text-shadow: 0 0 10px #ff3333; }
+
+        .end-screen h1 { font-size: 32px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .end-screen p { font-size: 16px; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="headphones-btn" onclick="activateFavoriteSong()" title="Play Favorite Song">
+    <svg viewBox="0 0 24 24">
+        <path d="M12,2A9,9,0,0,0,3,11v5a3,3,0,0,0,3,3H7a2,2,0,0,0,2-2V14a2,2,0,0,0,-2,-2H5V11a7,7,0,0,1,14,0v1H17a2,2,0,0,0,-2,2v3a2,2,0,0,0,2,2h1a3,3,0,0,0,3,-3V11A9,9,0,0,0,12,2Z"/>
+    </svg>
+</div>
+
+<div id="game-container">
+    <div id="battlefield">
+        <div class="platform" id="vecna-plat"></div>
+        <div class="platform" id="player-plat"></div>
+
+        <div class="hud" id="vecna-hud">
+            <div>VECNA ♀ Lv.45</div>
+            <div class="hp-bar-bg"><div id="vecna-hp" class="hp-bar-fill"></div></div>
+        </div>
+
+        <div class="hud" id="player-hud">
+            <div>ELEVEN ♂ Lv.42</div>
+            <div style="text-align: right;" id="player-hp-text">83/83</div>
+            <div class="hp-bar-bg"><div id="player-hp" class="hp-bar-fill"></div></div>
+        </div>
+
+        <div id="vecna-sprite" class="sprite"></div>
+        <div id="player-sprite" class="sprite"></div>
+
+        <div id="victory-screen" class="end-screen">
+            <h1>PORTAL CLOSED</h1>
+            <p>Vecna was banished back into the depths of the Upside Down...</p>
+        </div>
+
+        <div id="defeat-screen" class="end-screen">
+            <h1>YOU LOST YOUR MIND</h1>
+            <p>The grandfather clock chimes your final hour...</p>
+        </div>
+    </div>
+
+    <div id="ui-panel">
+        <div id="text-box">What will Eleven do?</div>
+        
+        <div id="menu-box">
+            <button class="menu-btn" id="btn-fight" onclick="openAttacks()">FIGHT</button>
+            <button class="menu-btn" id="btn-bag" onclick="playerAction('bag')">EGGO BAG</button>
+            <button class="menu-btn" id="btn-poke" onclick="playerAction('friends')">PARTY</button>
+            <button class="menu-btn" id="btn-run" onclick="playerAction('escape')">RUN</button>
+        </div>
+
+        <div id="attack-box">
+            <button class="menu-btn atk-btn" onclick="executeAttack('Mind Blast', 18, 28, 'hit')">Mind Blast</button>
+            <button class="menu-btn atk-btn" onclick="executeAttack('Fireworks', 12, 32, 'hit')">Fireworks</button>
+            <div></div> <button class="menu-btn" id="btn-cancel" onclick="closeAttacks()">BACK</button>
+        </div>
+    </div>
+</div>
+
+<audio id="bgm" src="bgm2.mp3" loop></audio>
+
+<script>
+    let playerMaxHP = 83;
+    let playerHP = 83;
+    let vecnaMaxHP = 120;
+    let vecnaHP = 120;
+    let eggos = 2;
+    let isTurnActive = false;
+    let isMusicActive = false;
+    let drainInterval = null;
+
+    const battlefield = document.getElementById('battlefield');
+    const textBox = document.getElementById('text-box');
+    const menuBox = document.getElementById('menu-box');
+    const attackBox = document.getElementById('attack-box');
+    const headphoneBtn = document.getElementById('headphones-btn');
+    const bgmAudio = document.getElementById('bgm');
+
+    // Synth Retro Sound Generator using Web Audio API
+    function playSound(type) {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'hit') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            osc.start(); osc.stop(ctx.currentTime + 0.2);
+        } else if (type === 'heal') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(300, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.start(); osc.stop(ctx.currentTime + 0.3);
+        } else if (type === 'clock') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(80, ctx.currentTime);
+            gain.gain.setValueAtTime(0.4, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+            osc.start(); osc.stop(ctx.currentTime + 0.8);
+        }
+    }
+
+    function triggerScreenShake() {
+        battlefield.classList.add('shake');
+        setTimeout(() => battlefield.classList.remove('shake'), 300);
+    }
+
+    function updateVisuals() {
+        document.getElementById('player-hp').style.width = (playerHP / playerMaxHP * 100) + '%';
+        document.getElementById('vecna-hp').style.width = (vecnaHP / vecnaMaxHP * 100) + '%';
+        document.getElementById('player-hp-text').innerText = `${playerHP}/${playerMaxHP}`;
+    }
+
+    function changeText(text, callback) {
+        textBox.innerText = text;
+        setTimeout(callback, 1800);
+    }
+
+    function openAttacks() {
+        if (isTurnActive) return;
+        menuBox.style.display = 'none';
+        attackBox.style.display = 'grid';
+    }
+
+    function closeAttacks() {
+        attackBox.style.display = 'none';
+        menuBox.style.display = 'grid';
+    }
+
+    // Function for Headphone click action
+    function activateFavoriteSong() {
+        if (isMusicActive || vecnaHP <= 0 || playerHP <= 0) return;
+        
+        isMusicActive = true;
+        headphoneBtn.classList.add('pulse-active');
+        
+        // Play the track
+        bgmAudio.play().catch(e => console.log("Audio playback requires user gesture."));
+        
+        textBox.innerText = "Max's headphones are on! Kate Bush music plays! Vecna weakens!";
+        
+        // Slowly drain Vecna's health every 1 second
+        drainInterval = setInterval(() => {
+            if (vecnaHP > 0 && playerHP > 0) {
+                vecnaHP = Math.max(0, vecnaHP - 4); 
+                updateVisuals();
+                triggerScreenShake();
+                
+                if (vecnaHP <= 0) {
+                    clearInterval(drainInterval);
+                    endBattle(true);
+                }
+            } else {
+                clearInterval(drainInterval);
+            }
+        }, 1000);
+    }
+
+    function executeAttack(attackName, minDmg, maxDmg, sound) {
+        closeAttacks();
+        isTurnActive = true;
+
+        let damage = Math.floor(Math.random() * (maxDmg - minDmg + 1)) + minDmg;
+        vecnaHP = Math.max(0, vecnaHP - damage);
+        updateVisuals();
+        playSound(sound);
+        triggerScreenShake();
+
+        changeText(`Eleven uses ${attackName}! Vecna takes ${damage} damage!`, () => {
+            if (vecnaHP <= 0) {
+                endBattle(true);
+            } else {
+                vecnaTurn();
+            }
+        });
+    }
+
+    function playerAction(type) {
+        if (isTurnActive) return;
+        isTurnActive = true;
+
+        if (type === 'bag') {
+            if (eggos > 0) {
+                eggos--;
+                playerHP = Math.min(playerMaxHP, playerHP + 40);
+                updateVisuals();
+                playSound('heal');
+                changeText(`Ate an Eggo Waffle! Tastes like 1984. Restored 40 HP. (Left: ${eggos})`, () => {
+                    vecnaTurn();
+                });
+            } else {
+                changeText("Out of Eggos! The freezer is empty!", () => { isTurnActive = false; });
+            }
+        } else if (type === 'friends') {
+            playSound('heal');
+            changeText("Dustin broadcasts over the radio: 'Never-ending story!' Your stats rose!", () => {
+                isTurnActive = false;
+            });
+        } else if (type === 'escape') {
+            playSound('clock');
+            changeText("BONG... BONG... The grandfather clock rings. You cannot escape!", () => {
+                vecnaTurn();
+            });
+        }
+    }
+
+    function vecnaTurn() {
+        if (vecnaHP <= 0) return; 
+        
+        let attacks = ["Psychic Curse", "Demogorgon Strike"];
+        let randomAttack = attacks[Math.floor(Math.random() * attacks.length)];
+        let damage = Math.floor(Math.random() * 10) + 14; 
+        
+        playerHP = Math.max(0, playerHP - damage);
+        updateVisuals();
+        playSound('hit');
+        triggerScreenShake();
+
+        changeText(`Vecna unleashes ${randomAttack}! Eleven takes ${damage} damage!`, () => {
+            if (playerHP <= 0) {
+                endBattle(false);
+            } else {
+                changeText(isMusicActive ? "The music keeps blasting! What will Eleven do?" : "What will Eleven do?", () => {
+                    isTurnActive = false;
+                });
+            }
+        });
+    }
+
+    function endBattle(isVictory) {
+        if (drainInterval) clearInterval(drainInterval);
+        bgmAudio.pause();
+        
+        menuBox.style.display = 'none';
+        attackBox.style.display = 'none';
+        
+        if (isVictory) {
+            document.getElementById('victory-screen').style.display = 'flex';
+        } else {
+            playSound('clock');
+            document.getElementById('defeat-screen').style.display = 'flex';
+        }
+
+        setTimeout(() => {
+            window.location.href = 'portal.html';
+        }, 4000);
+    }
+</script>
+
+</body>
+</html>

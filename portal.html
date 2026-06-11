@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hawkins Lab: The Maze</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            margin: 0;
+            background-color: #020305;
+            color: #ff1a1a;
+            font-family: 'Press Start 2P', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        #gameUI {
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: flex;
+            gap: 50px;
+            text-shadow: 0 0 6px #ff0000; 
+            letter-spacing: 1px;
+        }
+        #instructionsPanel {
+            background-color: #06090e;
+            border: 2px solid #3a4f66;
+            padding: 15px;
+            margin-bottom: 15px;
+            max-width: 960px;
+            font-size: 9px;
+            line-height: 1.6;
+            color: #a0aab5;
+            text-align: left;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.05);
+        }
+        #instructionsPanel h3 {
+            margin-top: 0;
+            color: #ff1a1a;
+            text-shadow: 0 0 4px #b50606;
+            font-size: 11px;
+        }
+        canvas {
+            border: 6px double #ff1a1a;
+            background-color: #030508;
+            box-shadow: 0 0 35px rgba(255, 0, 0, 0.15); 
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        .heart { 
+            color: #ff1a1a; 
+            text-shadow: 0 0 6px #ff0000;
+        }
+        .hint { 
+            font-size: 8px; 
+            color: #43586e; 
+            margin-top: 12px; 
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gameUI">
+        <div id="status">// HAWKINS LAB 1984</div>
+        <div>HP: <span class="heart" id="heartDisplay">❤❤❤</span></div>
+    </div>
+
+    <div id="instructionsPanel">
+        <h3>HOW TO PLAY:</h3>
+        * <strong>MOVEMENT:</strong> Use [W, A, S, D] or the [ARROW KEYS] to navigate the labyrinth.<br>
+        * <strong>COMBAT:</strong> Press [ENTER] when close to the Demogorgon to perform a melee stun. This knocks it out temporarily.<br>
+        * <strong>SAFE ZONES:</strong> The Experimental Lab is a designated safe zone. The Demogorgon cannot track or hunt you while you stay inside.<br>
+        * <strong>OBJECTIVE:</strong> Avoid the Demogorgon and step onto doors or portals to instantly access other rooms and areas. Escape through the Main Door on the far left.
+    </div>
+
+    <canvas id="gameCanvas" width="1000" height="550"></canvas>
+    <div class="hint">[WASD/ARROWS] Move | [ENTER] Melee Stun Demogorgon</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// --- CUSTOM IMAGE SOURCE CONFIGURATION ---
+const mcImage = new Image(); mcImage.src = "your_player_sprite.png"; 
+const demoImage = new Image(); demoImage.src = "your_demogorgon_sprite.png";
+const npcImage = new Image(); npcImage.src = "your_npc_sprite.png";
+const vecnaPortalImage = new Image(); vecnaPortalImage.src = "your_vecna_portal_sprite.png";
+const fileImage = new Image(); fileImage.src = "your_file_table_sprite.png"; 
+
+let hasCustomMC = false;     mcImage.onload = () => hasCustomMC = true;
+let hasCustomDemo = false;   demoImage.onload = () => hasCustomDemo = true;
+let hasCustomNPC = false;    npcImage.onload = () => hasCustomNPC = true;
+let hasCustomVecna = false;  vecnaPortalImage.onload = () => hasCustomVecna = true;
+let hasCustomFile = false;   fileImage.onload = () => hasCustomFile = true;
+
+// --- AUDIO CONFIGURATION ---
+const audio = {
+    bgm: new Audio("hawkins_ambience.mp3"),
+    growl: new Audio("sound-effect-growl-ruz-0-vs.wav"),
+    glitch: new Audio("Glitch Sound Effect (Speaker).wav"),
+    attack: new Audio("audio/psychic_blast.wav"),
+    demoKO: new Audio("audio/monster_screech.wav"),
+    damage: new Audio("audio/player_hit.wav")
+};
+
+// Configure looping elements
+audio.bgm.loop = true;
+audio.bgm.volume = 0.35;
+audio.growl.loop = true;
+audio.growl.volume = 0.0; // Dynamic tracking variables handle this
+
+let audioStarted = false;
+function startAudioEngine() {
+    if (!audioStarted) {
+        audio.bgm.play().catch(e => console.log("Audio waiting for player input interaction"));
+        audio.growl.play().catch(e => console.log("Audio waiting for player input interaction"));
+        audioStarted = true;
+    }
+}
+
+// --- GAME OBJECTS ---
+let player = { x: 70, y: 260, w: 22, h: 22, speed: 4, hearts: 3 };
+let demogorgon = { x: 500, y: 260, w: 28, h: 28, speed: 1.8, knockedOut: false, koTimer: 0 };
+let keys = {};
+
+// --- MYSTERIOUS PARTICLES (FOG SYSTEM) ---
+let fogParticles = [];
+for (let i = 0; i < 40; i++) {
+    fogParticles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 40 + 30,
+        speedX: Math.random() * 0.4 - 0.2,
+        speedY: Math.random() * 0.2 - 0.1,
+        alpha: Math.random() * 0.12 + 0.03
+    });
+}
+
+// --- GLITCH SYSTEM CONTROLS ---
+let glitchActive = false;
+let glitchTimer = 0;
+
+// --- MAP LAYOUT GEOMETRY ---
+const walls = [
+    { x: 0, y: 0, w: 1000, h: 15 }, { x: 0, y: 485, w: 1000, h: 15 },
+    { x: 0, y: 0, w: 15, h: 500 }, { x: 985, y: 0, w: 15, h: 500 },
+    { x: 15, y: 160, w: 50, h: 10 }, { x: 165, y: 160, w: 100, h: 10 },
+    { x: 385, y: 160, w: 140, h: 10 }, { x: 645, y: 160, w: 140, h: 10 }, { x: 905, y: 160, w: 80, h: 10 },
+    { x: 15, y: 330, w: 50, h: 10 }, { x: 165, y: 330, w: 100, h: 10 },
+    { x: 385, y: 330, w: 140, h: 10 }, { x: 645, y: 330, w: 140, h: 10 }, { x: 905, y: 330, w: 80, h: 10 },
+    { x: 265, y: 15, w: 10, h: 55 }, { x: 265, y: 115, w: 10, h: 45 },
+    { x: 525, y: 15, w: 10, h: 55 }, { x: 525, y: 115, w: 10, h: 45 },
+    { x: 785, y: 15, w: 10, h: 55 }, { x: 785, y: 115, w: 10, h: 45 },
+    { x: 265, y: 340, w: 10, h: 55 }, { x: 265, y: 440, w: 10, h: 45 },
+    { x: 525, y: 340, w: 10, h: 55 }, { x: 525, y: 440, w: 10, h: 45 },
+    { x: 785, y: 340, w: 10, h: 55 }, { x: 785, y: 440, w: 10, h: 45 }
+];
+
+const orangeDoors = [
+    { x: 0, y: 180, w: 15, h: 140 }, 
+    { x: 65, y: 160, w: 100, h: 10 }, { x: 285, y: 160, w: 100, h: 10 },
+    { x: 545, y: 160, w: 100, h: 10 }, { x: 805, y: 160, w: 100, h: 10 },
+    { x: 65, y: 330, w: 100, h: 10 }, { x: 285, y: 330, w: 100, h: 10 },
+    { x: 545, y: 330, w: 100, h: 10 }, { x: 805, y: 330, w: 100, h: 10 },
+    { x: 265, y: 70, w: 10, h: 45 }, { x: 525, y: 70, w: 10, h: 45 }, { x: 785, y: 70, w: 10, h: 45 },
+    { x: 265, y: 395, w: 10, h: 45 }, { x: 525, y: 395, w: 10, h: 45 }, { x: 785, y: 395, w: 10, h: 45 }
+];
+
+// --- OPTIMIZED TRIGGERS ---
+const triggers = [
+    { x: 0, y: 180, w: 25, h: 140, target: "outside.html", label: "MAIN DOOR TO GO OUTSIDE", type: "exit" },
+    { x: 120, y: 40, w: 45, h: 45, target: "vecna.html", label: "Rainbow Tunnel", type: "rainbow" },
+    { x: 380, y: 70, w: 50, h: 30, target: "file.html", label: "File Table", type: "file" },
+    { x: 640, y: 70, w: 40, h: 40, target: "0110.html", label: "011's Room Floor", type: "011" },
+    { x: 815, y: 35, w: 150, h: 45, target: null, label: "Russian Cage", type: "russians" }
+];
+
+const roomLabels = [
+    { text: "RAINBOW ROOM", x: 140, y: 35 },
+    { text: "FILE STORAGE", x: 400, y: 35 },
+    { text: "TEST ROOM 11", x: 660, y: 35 },
+    { text: "HOLDING CELLS", x: 890, y: 35 },
+    { text: "MAIN SECURITY HALLWAY", x: 500, y: 250 },
+    { text: "SAFE ZONE", x: 140, y: 355, color: "#00ff55" }, 
+    { text: "EXPERIMENTAL LAB", x: 140, y: 375, color: "rgba(82, 113, 140, 0.45)" }, 
+    { text: "PITCH BLACK VOID", x: 400, y: 370 },
+    { text: "ISOLATION WING", x: 660, y: 370 },
+    { text: "RESERVE SECTOR", x: 890, y: 370 }
+];
+
+// --- INPUT HANDLERS ---
+window.addEventListener("keydown", (e) => {
+    startAudioEngine();
+    keys[e.key.toLowerCase()] = true;
+    keys[e.code] = true;
+    if (e.code === "Enter" && !demogorgon.knockedOut) checkAttack();
+});
+window.addEventListener("keyup", (e) => {
+    keys[e.key.toLowerCase()] = false;
+    keys[e.code] = false;
+});
+
+// --- ENGINE LOGIC ---
+function update() {
+    movePlayer();
+    moveDemogorgon();
+
+    if (demogorgon.knockedOut) {
+        demogorgon.koTimer--;
+        if (demogorgon.koTimer <= 0) demogorgon.knockedOut = false;
+    }
+
+    fogParticles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < -p.size) p.x = canvas.width + p.size;
+        if (p.x > canvas.width + p.size) p.x = -p.size;
+        if (p.y < -p.size) p.y = canvas.height + p.size;
+        if (p.y > canvas.height + p.size) p.y = -p.size;
+    });
+
+    if (!glitchActive && Math.random() < 0.004) {
+        glitchActive = true;
+        glitchTimer = Math.floor(Math.random() * 8) + 3;
+
+        audio.glitch.currentTime = 0;
+        audio.glitch.volume = 0.25;
+        audio.glitch.play().catch(e => {});
+    } else if (glitchActive) {
+        glitchTimer--;
+        if (glitchTimer <= 0) glitchActive = false;
+    }
+
+    checkTriggers();
+}
+
+function movePlayer() {
+    let nextX = player.x; let nextY = player.y;
+    if (keys["w"] || keys["arrowup"]) nextY -= player.speed;
+    if (keys["s"] || keys["arrowdown"]) nextY += player.speed;
+    if (keys["a"] || keys["arrowleft"]) nextX -= player.speed;
+    if (keys["d"] || keys["arrowright"]) nextX += player.speed;
+
+    let pTestX = { x: nextX, y: player.y, w: player.w, h: player.h };
+    let collisionX = false;
+    for (let wall of walls) { if (rectCollide(pTestX, wall)) { collisionX = true; break; } }
+    if (!collisionX) player.x = nextX;
+
+    let pTestY = { x: player.x, y: nextY, w: player.w, h: player.h };
+    let collisionY = false;
+    for (let wall of walls) { if (rectCollide(pTestY, wall)) { collisionY = true; break; } }
+    if (!collisionY) player.y = nextY;
+}
+
+function moveDemogorgon() {
+    if (demogorgon.knockedOut) {
+        audio.growl.volume = 0;
+        return;
+    }
+    let isHidden = (player.x > 15 && player.x < 265 && player.y > 340 && player.y < 485);
+    if (isHidden) {
+        audio.growl.volume = 0;
+        return;
+    }
+
+    let dx = player.x - demogorgon.x;
+    let dy = player.y - demogorgon.y;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    // --- SPATIAL PROXIMITY AUDIO SYSTEM ---
+    let maxAudibleRange = 550; 
+    if (distance < maxAudibleRange) {
+        audio.growl.volume = (1 - (distance / maxAudibleRange)) * 0.85;
+    } else {
+        audio.growl.volume = 0;
+    }
+
+    if (distance > 4) {
+        let stepX = (dx / distance) * demogorgon.speed;
+        let stepY = (dy / distance) * demogorgon.speed;
+        if (!checkWallCollision({ x: demogorgon.x + stepX, y: demogorgon.y, w: demogorgon.w, h: demogorgon.h })) demogorgon.x += stepX;
+        if (!checkWallCollision({ x: demogorgon.x, y: demogorgon.y + stepY, w: demogorgon.w, h: demogorgon.h })) demogorgon.y += stepY;
+    }
+
+    if (rectCollide(player, demogorgon)) {
+        audio.damage.currentTime = 0;
+        audio.damage.play().catch(e => {});
+
+        player.hearts--;
+        document.getElementById("heartDisplay").innerText = "❤".repeat(player.hearts);
+        player.x = 70; player.y = 260;
+        demogorgon.x = 500; demogorgon.y = 260;
+        if (player.hearts <= 0) gameOver();
+    }
+}
+
+function checkWallCollision(rect) {
+    for (let wall of walls) { if (rectCollide(rect, wall)) return true; }
+    return false;
+}
+
+function checkAttack() {
+    let range = 65; 
+    let dx = player.x - demogorgon.x; let dy = player.y - demogorgon.y;
+    if (Math.sqrt(dx * dx + dy * dy) <= range) {
+        audio.attack.currentTime = 0;
+        audio.attack.play().catch(e => {});
+
+        setTimeout(() => {
+            audio.demoKO.currentTime = 0;
+            audio.demoKO.play().catch(e => {});
+        }, 120);
+
+        demogorgon.knockedOut = true;
+        demogorgon.koTimer = 60 * 10;
+    }
+}
+
+let redirecting = false;
+function checkTriggers() {
+    if (redirecting) return;
+    for (let trigger of triggers) {
+        if (rectCollide(player, trigger) && trigger.target) {
+            redirecting = true;
+            window.location.replace(trigger.target);
+            break;
+        }
+    }
+}
+
+function rectCollide(r1, r2) {
+    const padding = 2;
+    return r1.x - padding < r2.x + r2.w &&
+           r1.x + r1.w + padding > r2.x &&
+           r1.y - padding < r2.y + r2.h &&
+           r1.y + r1.h + padding > r2.y;
+}
+
+function gameOver() {
+    audio.bgm.pause();
+    audio.growl.pause();
+
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ff1a1a";
+    ctx.font = "16px 'Press Start 2P'";
+    ctx.textAlign = "center";
+    ctx.fillText("Every end has a beginning", canvas.width / 2, canvas.height / 2);
+    setTimeout(() => { window.location.replace("index.html"); }, 1500);
+}
+
+// --- RENDER SYSTEM ---
+function draw() {
+    if (player.hearts <= 0) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#05070a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    let rainbowColors = ["#7a132b", "#87491f", "#8a7b14", "#215e2b", "#223573", "#511463"];
+    let stripWidth = 250 / rainbowColors.length;
+    for (let i = 0; i < rainbowColors.length; i++) {
+        ctx.fillStyle = rainbowColors[i];
+        ctx.fillRect(15 + (i * stripWidth), 15, stripWidth, 145);
+    }
+
+    ctx.fillStyle = "#0d0609";
+    ctx.fillRect(15, 170, 970, 160);
+
+    ctx.font = "8px 'Press Start 2P'";
+    ctx.textAlign = "center";
+    roomLabels.forEach(label => {
+        ctx.fillStyle = label.color || "rgba(60, 80, 102, 0.4)";
+        ctx.fillText(label.text, label.x, label.y);
+    });
+
+    walls.forEach(wall => {
+        ctx.fillStyle = "#121924"; 
+        ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
+        
+        ctx.fillStyle = "#090d14";
+        let size = 6; 
+        for (let wx = wall.x; wx < wall.x + wall.w; wx += size * 2) {
+            for (let wy = wall.y; wy < wall.y + wall.h; wy += size) {
+                let offset = (Math.floor(wy / size) % 2 === 0) ? size : 0;
+                ctx.fillRect(wx + offset, wy, size - 1, size - 1);
+            }
+        }
+        ctx.strokeStyle = "#1b2536";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(wall.x, wall.y, wall.w, wall.h);
+    });
+
+    orangeDoors.forEach(door => {
+        ctx.fillStyle = "#8a420f";
+        ctx.fillRect(door.x, door.y, door.w, door.h);
+        ctx.fillStyle = "#542705";
+        if(door.w > door.h) {
+            for(let gx = door.x + 8; gx < door.x + door.w; gx += 12) ctx.fillRect(gx, door.y, 2, door.h);
+        } else {
+            for(let gy = door.y + 8; gy < door.y + door.h; gy += 12) ctx.fillRect(door.x, gy, door.w, 2);
+        }
+    });
+
+    triggers.forEach(trig => {
+        if (!trig.type) return;
+        if (trig.type === "rainbow") {
+            if (hasCustomVecna) {
+                ctx.drawImage(vecnaPortalImage, trig.x, trig.y, trig.w, trig.h);
+            } else {
+                ctx.fillStyle = (Math.floor(Date.now() / 300) % 2 === 0) ? "#210121" : "#420442";
+                ctx.fillRect(trig.x, trig.y, trig.w, trig.h);
+            }
+        } 
+        else if (trig.type === "file") {
+            if (hasCustomFile) {
+                ctx.drawImage(fileImage, trig.x, trig.y, trig.w, trig.h);
+            } else {
+                ctx.fillStyle = "#5c4126"; 
+                ctx.fillRect(trig.x, trig.y, trig.w, trig.h);
+            }
+        } 
+        else if (trig.type === "011") {
+            ctx.fillStyle = "#7a5d05"; 
+            ctx.fillRect(trig.x, trig.y, trig.w, trig.h);
+        } 
+        else if (trig.type === "russians") {
+            let npcSize = 32; let spacing = 45;
+            for (let i = 0; i < 3; i++) {
+                let npcX = trig.x + 15 + (i * spacing); let npcY = trig.y + 10;
+                
+                if (hasCustomNPC) { 
+                    ctx.drawImage(npcImage, npcX, npcY, npcSize, npcSize); 
+                } else { 
+                    ctx.fillStyle = "#91540a"; 
+                    ctx.fillRect(npcX, npcY, npcSize, npcSize); 
+                }
+
+                ctx.save();
+                let pulseOffset = Math.sin(Date.now() / 220 + i) * 2;
+                let bubbleX = npcX + 16;
+                let bubbleY = npcY - 12 + pulseOffset;
+
+                ctx.fillStyle = "#ffffff";
+                ctx.strokeStyle = "#000000";
+                ctx.lineWidth = 1;
+                ctx.fillRect(bubbleX - 42, bubbleY - 8, 84, 15);
+                ctx.strokeRect(bubbleX - 42, bubbleY - 8, 84, 15);
+                ctx.fillRect(bubbleX - 3, bubbleY + 7, 6, 3);
+                ctx.strokeRect(bubbleX - 3, bubbleY + 7, 6, 3);
+
+                ctx.font = "5px 'Press Start 2P'";
+                ctx.fillStyle = "#ff0000";
+                ctx.textAlign = "center";
+                ctx.fillText("HELP! SAVE US", bubbleX, bubbleY + 2);
+                ctx.restore();
+            }
+
+            ctx.strokeStyle = "#384752"; ctx.lineWidth = 3;
+            for(let i=trig.x; i < trig.x+trig.w; i+=15) {
+                ctx.beginPath(); ctx.moveTo(i, trig.y); ctx.lineTo(i, trig.y+trig.h); ctx.stroke();
+            }
+        }
+    });
+
+    if (player.x > 275 && player.x < 525 && player.y > 340 && player.y < 485) {
+        ctx.fillStyle = "rgba(1, 2, 4, 0.98)";
+        ctx.fillRect(275, 340, 250, 145);
+    }
+
+    if (demogorgon.knockedOut) {
+        ctx.save(); ctx.globalAlpha = 0.25;
+        if (hasCustomDemo) { ctx.drawImage(demoImage, demogorgon.x, demogorgon.y, demogorgon.w, demogorgon.h); } 
+        else { ctx.fillStyle = "#541416"; ctx.fillRect(demogorgon.x, demogorgon.y, demogorgon.w, demogorgon.h); }
+        ctx.restore();
+    } else {
+        if (hasCustomDemo) { ctx.drawImage(demoImage, demogorgon.x, demogorgon.y, demogorgon.w, demogorgon.h); } 
+        else {
+            ctx.fillStyle = "#7a090d"; ctx.fillRect(demogorgon.x, demogorgon.y, demogorgon.w, demogorgon.h);
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(demogorgon.x + 4, demogorgon.y + 8, 4, 4); ctx.fillRect(demogorgon.x + 18, demogorgon.y + 8, 4, 4);
+        }
+    }
+
+    if (hasCustomMC) { ctx.drawImage(mcImage, player.x, player.y, player.w, player.h); } 
+    else { ctx.fillStyle = "#00cc44"; ctx.fillRect(player.x, player.y, player.w, player.h); }
+
+    ctx.save();
+    fogParticles.forEach(p => {
+        let grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+        grad.addColorStop(0, `rgba(13, 20, 31, ${p.alpha})`);
+        grad.addColorStop(0.5, `rgba(8, 12, 18, ${p.alpha * 0.4})`);
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.restore();
+
+    ctx.font = "6px 'Press Start 2P'"; ctx.fillStyle = "#9c1111"; ctx.save();
+    ctx.translate(35, 250); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center";
+    ctx.fillText("MAIN DOOR TO GO OUTSIDE", 0, 0); ctx.restore();
+
+    if (glitchActive) {
+        ctx.save();
+        let sliceY = Math.random() * canvas.height;
+        let sliceH = Math.random() * 60 + 15;
+        let shiftX = Math.random() * 30 - 15;
+        ctx.drawImage(canvas, 0, sliceY, canvas.width, sliceH, shiftX, sliceY, canvas.width, sliceH);
+
+        if (Math.random() < 0.4) {
+            ctx.fillStyle = "rgba(255, 0, 0, 0.15)";
+            ctx.fillRect(0, Math.random() * canvas.height, canvas.width, Math.random() * 6);
+        }
+        ctx.restore();
+    }
+}
+
+// --- INITIALIZATION ---
+function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Upside Down Wall</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Special+Elite&display=swap');
+
+        body {
+            background-color: #0b0705;
+            color: #fff;
+            margin: 0;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            /* Allowed scrolling while keeping structural elements contained */
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Ambient dark vignette layer */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 30%, rgba(0, 0, 0, 0.9) 90%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Moving Fog Layers Container fixed to screen */
+        .fog-wrapper {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 4;
+            opacity: 0.45;
+        }
+
+        .fog-layer {
+            position: absolute;
+            top: 0; left: 0; width: 200%; height: 100%;
+            background: url('https://raw.githubusercontent.com/kylewetton/article-assets/master:/fog-1.png') repeat-x;
+            background-size: 50% 100%;
+        }
+
+        .fog-1 {
+            animation: moveFog 45s linear infinite;
+        }
+
+        .fog-2 {
+            animation: moveFog 25s linear infinite;
+            opacity: 0.6;
+            transform: scaleY(-1);
+        }
+
+        @keyframes moveFog {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-50%, 0, 0); }
+        }
+
+        /* The Board Wrapper mimicking the wallpaper & framing */
+        .ouija-board {
+            position: relative;
+            width: 95%;
+            max-width: 900px;
+            padding: 60px 40px;
+            box-sizing: border-box;
+            background-color: #c5b08c;
+            /* Shaded, grimy vintage floral wall texturing */
+            background-image: 
+                radial-gradient(rgba(0,0,0,0.4) 15%, transparent 16%),
+                radial-gradient(rgba(0,0,0,0.4) 15%, transparent 16%),
+                linear-gradient(45deg, rgba(50,30,15,0.08) 25%, transparent 25%, transparent 75%, rgba(50,30,15,0.08) 75%, rgba(50,30,15,0.08)),
+                linear-gradient(45deg, rgba(50,30,15,0.08) 25%, transparent 25%, transparent 75%, rgba(50,30,15,0.08) 75%, rgba(50,30,15,0.08));
+            background-size: 60px 60px, 60px 60px, 60px 60px, 60px 60px;
+            background-position: 0 0, 30px 30px, 0 0, 30px 30px;
+            
+            border: 12px double #1f1308;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.9), 0 15px 40px rgba(0,0,0,0.8);
+            border-radius: 4px;
+            z-index: 2;
+            filter: saturate(0.8) contrast(1.1);
+        }
+
+        /* Creepy Shadow overlay on the wall board itself */
+        .ouija-board::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent 30%, transparent 70%, rgba(0,0,0,0.5));
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Ouija Top Elements */
+        .ouija-header {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Special Elite', serif;
+            font-size: 2.2rem;
+            color: #1f1308;
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            padding: 0 30px;
+            user-select: none;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.1);
+        }
+
+        /* Stranger Things Letter Rows and Wire Strands */
+        .wall-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            position: relative;
+            margin: 60px 0;
+            padding-top: 20px;
+        }
+
+        /* Curving wire effect */
+        .wall-row::before {
+            content: '';
+            position: absolute;
+            top: -15px; left: 0; right: 0; height: 30px;
+            border-bottom: 3px solid rgba(5, 5, 5, 0.85);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .letter-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+        }
+
+        /* Christmas Light Bulbs */
+        .bulb {
+            width: 16px;
+            height: 26px;
+            border-radius: 50% 50% 40% 40%;
+            background-color: #3d3730;
+            position: absolute;
+            top: -24px;
+            transition: all 0.1s ease-in-out;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.15);
+            z-index: 4;
+        }
+
+        /* Little socket attachment */
+        .bulb::before {
+            content: '';
+            position: absolute;
+            top: -4px; left: 4px; width: 8px; height: 5px;
+            background: #0a0a0a;
+        }
+
+        /* Messy Hand-Painted Font Style */
+        .letter {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 3.6rem;
+            color: rgba(15, 10, 8, 0.95);
+            text-shadow: 2px 3px 4px rgba(0,0,0,0.4);
+            user-select: none;
+            margin-top: 5px;
+            transform: rotate(calc(var(--rotation, 0deg)));
+        }
+
+        /* Bulb Glow Attributes */
+        .letter-node[data-color="blue"].lit .bulb {
+            background-color: #77e7ff;
+            box-shadow: 0 0 25px #00a2ff, 0 0 50px #00a2ff, 0 0 80px rgba(0,162,255,0.6);
+        }
+        .letter-node[data-color="yellow"].lit .bulb {
+            background-color: #fff399;
+            box-shadow: 0 0 25px #ffcc00, 0 0 50px #ffcc00, 0 0 80px rgba(255,204,0,0.6);
+        }
+        .letter-node[data-color="red"].lit .bulb {
+            background-color: #ff8888;
+            box-shadow: 0 0 25px #ff0000, 0 0 50px #ff0000, 0 0 80px rgba(255,0,0,0.6);
+        }
+        .letter-node[data-color="green"].lit .bulb {
+            background-color: #99ff99;
+            box-shadow: 0 0 25px #00ff00, 0 0 50px #00ff00, 0 0 80px rgba(0,255,0,0.6);
+        }
+        .letter-node[data-color="white"].lit .bulb {
+            background-color: #ffffff;
+            box-shadow: 0 0 25px #ffffff, 0 0 50px #ffffff, 0 0 80px rgba(255,255,255,0.6);
+        }
+
+        /* Ouija Bottom Goodbye Button */
+        .ouija-footer {
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            position: relative;
+            z-index: 6;
+        }
+
+        .goodbye-btn {
+            font-family: 'Special Elite', serif;
+            font-size: 2.5rem;
+            color: #1f1308;
+            font-weight: bold;
+            letter-spacing: 6px;
+            cursor: pointer;
+            transition: color 0.3s, transform 0.2s, text-shadow 0.3s;
+            user-select: none;
+            border: none;
+            background: none;
+        }
+
+        .goodbye-btn:hover {
+            color: #9c2424;
+            transform: scale(1.05);
+            text-shadow: 0 0 10px rgba(156, 36, 36, 0.4);
+        }
+
+        /* User Input UI Box */
+        .control-panel {
+            margin-top: 40px;
+            display: flex;
+            gap: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            z-index: 10;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #523b24;
+            background: #140d07;
+            color: #dfcaa7;
+            border-radius: 4px;
+            font-family: 'Special Elite', serif;
+            font-size: 1.1rem;
+            outline: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .send-btn {
+            padding: 15px 30px;
+            background: #2e1c0c;
+            border: 2px solid #523b24;
+            color: #dfcaa7;
+            font-family: 'Special Elite', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .send-btn:hover {
+            background: #412914;
+            color: #fff;
+        }
+
+        .send-btn:disabled {
+            background: #1d1712;
+            border-color: #2b221a;
+            color: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fog-wrapper">
+        <div class="fog-layer fog-1"></div>
+        <div class="fog-layer fog-2"></div>
+    </div>
+
+    <div class="ouija-board">
+        <div class="ouija-header">
+            <div>YES</div>
+            <div>NO</div>
+        </div>
+
+        <div class="wall-row" id="row-1"></div>
+        <div class="wall-row" id="row-2"></div>
+        <div class="wall-row" id="row-3"></div>
+
+        <div class="ouija-footer">
+            <button class="goodbye-btn" onclick="teleport()">GOOD BYE</button>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <input type="text" id="user-input" placeholder="Ask the wall a question..." maxlength="30">
+        <button class="send-btn" id="action-btn" onclick="receiveAnswer()">ASK</button>
+    </div>
+
+    <script>
+        const rowData = [
+            ["A", "B", "C", "D", "E", "F", "G", "H"],
+            ["I", "J", "K", "L", "M", "N", "O", "P", "Q"],
+            ["R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+        ];
+
+        const bulbColors = ["white", "blue", "yellow", "red", "green"];
+
+        const scaryResponses = [
+            "DEAD",
+            "FARAWAY",
+            "RUN",
+            "GONE",
+            "DEATH",
+            "LOOKBEHIND",
+            "HERE",
+            "HIDE",
+            "TOO LATE",
+            "HELP"
+        ];
+
+        rowData.forEach((letters, rIndex) => {
+            const targetRow = document.getElementById(`row-${rIndex + 1}`);
+            letters.forEach((char, cIndex) => {
+                const assignedColor = bulbColors[(rIndex * 5 + cIndex) % bulbColors.length];
+                
+                const node = document.createElement('div');
+                node.className = 'letter-node';
+                node.setAttribute('data-letter', char);
+                node.setAttribute('data-color', assignedColor);
+
+                const bulb = document.createElement('div');
+                bulb.className = 'bulb';
+
+                const displayLetter = document.createElement('div');
+                displayLetter.className = 'letter';
+                displayLetter.innerText = char;
+                
+                const randomRotation = (Math.random() * 24 - 12) + "deg";
+                displayLetter.style.setProperty('--rotation', randomRotation);
+
+                node.appendChild(bulb);
+                node.appendChild(displayLetter);
+                targetRow.appendChild(node);
+            });
+        });
+
+        async function receiveAnswer() {
+            const queryField = document.getElementById('user-input');
+            const submitBtn = document.getElementById('action-btn');
+            
+            if (!queryField.value.trim()) return;
+
+            queryField.disabled = true;
+            submitBtn.disabled = true;
+
+            const randomIndex = Math.floor(Math.random() * scaryResponses.length);
+            const responseSequence = scaryResponses[randomIndex];
+
+            for (let position = 0; position < responseSequence.length; position++) {
+                const activeChar = responseSequence[position];
+                
+                if (activeChar === ' ') {
+                    await stall(800);
+                    continue;
+                }
+
+                const matchingNode = document.querySelector(`.letter-node[data-letter="${activeChar}"]`);
+
+                if (matchingNode) {
+                    matchingNode.classList.add('lit');
+                    await stall(1200); 
+                    matchingNode.classList.remove('lit');
+                    await stall(400);  
+                }
+            }
+
+            queryField.disabled = false;
+            submitBtn.disabled = false;
+            queryField.value = '';
+        }
+
+        function stall(duration) {
+            return new Promise(callback => setTimeout(callback, duration));
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                receiveAnswer();
+            }
+        });
+
+        function teleport() {
+            window.location.href = 'portal.html';
+        }
+    </script>
+</body>
+</html>

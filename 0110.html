@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAWKINS NATIONAL LABORATORY - EMERGENCY REDACTED DATABASE</title>
+    <style>
+        /* 1984 CRT Terminal Aesthetic - RED ALERT VARIANT */
+        :root {
+            --terminal-red: #ff3333;
+            --dark-red: #330000;
+            --bg-black: #0a0505;
+            --scanline: rgba(51, 0, 0, 0.15);
+        }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--terminal-red);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            text-transform: uppercase;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* CRT Screen Scanline Effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, var(--scanline) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Top Right Portal Navigation Button */
+        .portal-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: transparent;
+            color: var(--terminal-red);
+            border: 2px solid var(--terminal-red);
+            padding: 10px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            text-decoration: none;
+            text-transform: uppercase;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.2s ease;
+        }
+
+        .portal-btn:hover {
+            background-color: var(--terminal-red);
+            color: var(--bg-black);
+            box-shadow: 0 0 15px var(--terminal-red);
+        }
+
+        header {
+            border-bottom: 2px solid var(--terminal-red);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            padding-top: 20px; /* Space for the button on smaller screens */
+        }
+
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+
+        /* Grid Layout for Photocards */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 1980s Government File Card */
+        .photocard {
+            background-color: var(--dark-red);
+            border: 2px solid var(--terminal-red);
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .photocard:hover {
+            background-color: var(--terminal-red);
+            color: var(--bg-black);
+            box-shadow: 0 0 15px var(--terminal-red);
+        }
+
+        /* Image / Photo Box styling */
+        .photo-container {
+            width: 100%;
+            height: 180px;
+            border: 1px dashed var(--terminal-red);
+            margin-bottom: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(150%) brightness(90%);
+        }
+
+        .photocard:hover .photo-container {
+            border-color: var(--bg-black);
+        }
+
+        .photocard:hover .photo-container img {
+            filter: grayscale(100%) contrast(150%) invert(100%);
+        }
+
+        /* Info Terminal Modal Overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(5, 5, 5, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-black);
+            border: 3px solid var(--terminal-red);
+            padding: 30px;
+            max-width: 700px;
+            width: 90%;
+            box-shadow: 0 0 30px var(--terminal-red);
+            position: relative;
+        }
+
+        .modal-body-layout {
+            display: flex;
+            gap: 20px;
+        }
+
+        .modal-photo {
+            width: 200px;
+            height: 250px;
+            border: 2px solid var(--terminal-red);
+            flex-shrink: 0;
+            background-color: #000;
+        }
+
+        .modal-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(140%);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        .file-header {
+            border-bottom: 1px dashed var(--terminal-red);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .file-data {
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 600px) {
+            .portal-btn {
+                position: static;
+                display: block;
+                text-align: center;
+                margin: 0 auto 20px auto;
+                width: fit-content;
+            }
+            .modal-body-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+            .modal-photo {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="portal.html" class="portal-btn">&lt;&lt; BACK TO PORTAL</a>
+
+    <header>
+        <h1>DEPARTMENT OF ENERGY - MKULTRA DIVISION</h1>
+        <h2>HAWKINS NATIONAL LABORATORY // RESTRICTED ACCESS</h2>
+        <p class="blink">CRITICAL ALERT: BREACH DETECTED - SYSTEM IS RUNNING ON EMERGENCY POWER</p>
+    </header>
+
+    <div class="grid-container" id="subjects-grid">
+        </div>
+
+    <div class="modal" id="info-modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div class="file-header">
+                <h3>CLASSIFIED DOCUMENT: BRENNER SECURE ARCHIVE</h3>
+                <p>DO NOT DISTRIBUTE - CRIMINAL PENALTIES APPLY</p>
+            </div>
+            <div class="modal-body-layout">
+                <div class="modal-photo" id="modal-photo-box">
+                    </div>
+                <div class="file-data" id="modal-data">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const subjectsData = {
+            "001": {
+                name: "Henry Creel / One",
+                status: "MISSING / ALTERNATE DIMENSION",
+                abilities: "Telekinesis, Telepathy, Illusion Generation, Biokinesis",
+                image: "001.png", 
+                desc: "The baseline specimen. Exhibited extreme psychopathic tendencies and immense power. Responsible for the 1979 lab massacre. Transformed into entity 'Vecna' after banishment to the Upside Down."
+            },
+            "002": {
+                name: "Two",
+                status: "DECEASED (1979)",
+                abilities: "Telekinesis",
+                image: "002.png",
+                desc: "Acted as the leader among the children. Exhibited strong telekinetic abilities but struggled with insecurity and aggression toward Subject 011."
+            },
+            "003": {
+                name: "Three",
+                status: "DECEASED (1979)",
+                abilities: "Telekinesis, Remote Viewing",
+                image: "003.png",
+                desc: "Identified during early group training sessions. Terminated during the 1979 security breach event."
+            },
+            "004": {
+                name: "Four",
+                status: "DECEASED (1979)",
+                abilities: "Telekinesis",
+                image: "004.png",
+                desc: "Maintained average capability metrics. File closed following the 1979 laboratory incident."
+            },
+            "005": {
+                name: "Five",
+                status: "DECEASED (1979)",
+                abilities: "Telekinesis, Clairvoyance",
+                image: "005.png",
+                desc: "Demonstrated moderate success in card-guessing and remote target location exercises before termination."
+            },
+            "006": {
+                name: "Six",
+                status: "DECEASED (1979)",
+                abilities: "Telekinesis, Premonition",
+                image: "006.png",
+                desc: "Showed occasional flashes of precognitive awareness. Eliminated during the 1979 internal purge."
+            },
+            "007": {
+                name: "Seven",
+                status: "DECEASED (1979)",
+                abilities: "Telekinesis",
+                image: "007.png",
+                desc: "Exhibited standard telekinetic output levels under stress. Deceased during the 1979 incident."
+            },
+            "008": {
+                name: "Kali Prasad / Eight",
+                status: "ESCAPED / LOCATION UNKNOWN",
+                abilities: "Mental Illusion Generation",
+                image: "008.png",
+                desc: "Escaped prior to the 1979 massacre. Powers uniquely manifest as sensory hallucinations rather than physical telekinesis. Currently tracking nationwide."
+            },
+            "009": {
+                name: "Nine",
+                status: "DECEASED (1979)",
+                abilities: "Telekinesis, Pyrokinesis (Tethered)",
+                image: "009.png",
+                desc: "Subject data suggests a unique thermal manipulation variant. Terminated during the 1979 facility breach."
+            },
+            "010": {
+                name: "Ten",
+                status: "DECEASED (1979)",
+                abilities: "Telekinesis, Advanced Remote Viewing",
+                image: "010.png",
+                desc: "Was actively training with Dr. Brenner during the 1979 breach. Attempted to remote view another room just before being neutralized by Subject 001."
+            },
+            "011": {
+                name: "Eleven / El",
+                status: "ACTIVE / LOOSE IN HAWKINS",
+                abilities: "Class-A Telekinesis, Telepathy, Subspace/Portal Generation",
+                image: "011.png",
+                desc: "Possesses the highest latent psychic potential. Successfully breached the barrier to an alternate echo-dimension (The Upside Down). Currently escaping local authorities."
+            }
+        };
+
+        // Generate the 11 Photocards dynamically
+        const grid = document.getElementById('subjects-grid');
+        
+        for (let i = 1; i <= 11; i++) {
+            const id = String(i).padStart(3, '0');
+            const subject = subjectsData[id];
+
+            const card = document.createElement('div');
+            card.className = 'photocard';
+            card.onclick = () => openFile(id);
+            
+            card.innerHTML = `
+                <div class="photo-container">
+                    <img src="${subject.image}" alt="SUBJECT ${id}" onerror="this.style.display='none'; this.parentNode.innerHTML='[IMAGE CLASSIFIED]<br>SUBJECT ${id}';">
+                </div>
+                <strong>SUBJECT ${id}</strong><br>
+                <span style="font-size: 11px;">STATUS: ${subject.status.split(' ')[0]}</span>
+            `;
+            
+            grid.appendChild(card);
+        }
+
+        // Modal Controls
+        const modal = document.getElementById('info-modal');
+        const modalData = document.getElementById('modal-data');
+        const modalPhotoBox = document.getElementById('modal-photo-box');
+
+        function openFile(id) {
+            const subject = subjectsData[id];
+            
+            modalPhotoBox.innerHTML = `<img src="${subject.image}" alt="SUBJECT ${id}" onerror="this.parentNode.innerHTML='[PHOTO ERROR]';">`;
+            
+            modalData.innerHTML = `
+                <p><strong>SUBJECT ID:</strong> ${id}</p>
+                <p><strong>DESIGNATION:</strong> ${subject.name}</p>
+                <p><strong>CURRENT STATUS:</strong> <span style="text-decoration: underline;">${subject.status}</span></p>
+                <p><strong>MEASURED ABILITIES:</strong> ${subject.abilities}</p>
+                <p><strong>CASE NOTES:</strong></p>
+                <p style="border: 1px solid var(--terminal-red); padding: 10px; background: #1a0000; font-size: 13px;">
+                    ${subject.desc}
+                </p>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
