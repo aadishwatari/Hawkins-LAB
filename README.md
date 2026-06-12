@@ -76,7 +76,7 @@ WARNING: YOU MIGHT GET ANSWERS THAT WOULD NOT BE DESIRED (LOOK BEHIND MAYBE SOME
 
 <H1> The experiment File </H1>
 This contains all the details about all the children who were part of experminet in the Hawkins lab<br>
-It also tell all the relevent information required about them:
+It also tell all the relevent information required about them:<br>
 001
 <img src="001.png" width="300" height="300">
 002
@@ -99,3 +99,9 @@ It also tell all the relevent information required about them:
 <img src="010.png" width="300" height="300">
 011
 <img src="011.png" width="300" height="300">
+
+The theme is according to the 80s government data base and contains detailed information about the subject:
+<img width="794" height="583" alt="Screenshot 2026-06-12 at 11 10 42 PM" src="https://github.com/user-attachments/assets/6d20a04a-a47d-4ddc-a2bc-f33e574c9e12" /> 
+
+
+
