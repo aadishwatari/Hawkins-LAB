@@ -14,4 +14,4 @@ I used AI to assist me in makimg this website<br>
 This is made for #horizons
 
 <h1>The Starting/Intro Page </h1>
-
+This page contains a background of Hawkins and is covered with elements & texture that gives the vintage 80s feel to it. There is a starting button, and when you click on it, it will start to load the game and one of the Stranger things soundtracks will start playing in background. 
