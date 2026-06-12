@@ -10,3 +10,8 @@ There are several elements to this website and the following list has all pages 
 5. Info File <br>
 7. Talk to Upside Doown <br><br>
 
+I used AI to assist me in makimg this website<br>
+This is made for #horizons
+
+<h1>The Starting/Intro Page </h1>
+
