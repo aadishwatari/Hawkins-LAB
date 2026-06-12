@@ -65,4 +65,9 @@ This section of the game was inspired by the Google Chrome's T-rex Run game but 
 The MC will jump when you will use the enter button<br>
 If you got hit by an obstacle in the way...you would be killed by the Mindflair<img width="1470" height="828" alt="Screenshot 2026-06-12 at 10 07 23 PM" src="https://github.com/user-attachments/assets/6c56cd34-5b5a-4011-b114-16ac7f71f028" />
 
+<h1>Talk to Upside Down World</h1>
+When you will go to the room, that is aside of the rainbow room, you'll find yourself looking at a wall that has all the letters with all the alphabets written on it.<img width="1025" height="812" alt="Screenshot 2026-06-12 at 10 19 30 PM" src="https://github.com/user-attachments/assets/077d1d28-ed86-4ad5-8a79-9a1d227c0ab6" />
 
+Each letter has a twinkling light above it and it works like an Ojia Board to give answers to all the questions.<br>
+There is an ask anything bar where you can type your answers <br>
+To end the game you have to click on the goodbye button and you will be teleported back to the Hawkins Lab. <img width="999" height="260" alt="Screenshot 2026-06-12 at 10 19 52 PM" src="https://github.com/user-attachments/assets/baf86949-c764-4828-8b18-ced45da338b7" />
