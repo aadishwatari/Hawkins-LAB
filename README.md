@@ -43,6 +43,20 @@ $. Your total heath is 3 hearts and if you lose all that you will have to go  ba
 7. NOTE: You to other portals or outside to explore the whole game XO
 
 <h1>Vecna Battle</h1>
+When you will go inside upside down for portal that is present in rainbow room... you will challenge Venca(001) through a 1V1 match. 
+I was inspired by Pokémon Nintendo games for this part... and I wanted to create something similar... therefore, it looks like a 2D retro game. 
+<img width="642" height="486" alt="Screenshot 2026-06-12 at 12 46 58 PM" src="https://github.com/user-attachments/assets/446837ad-9a4f-460a-89ae-e932d5843bd4" />
+Here The MC could use 4 moves:- <br>
+1. Attack: This would allow players to attack on verna using MC's Powers that are A] Mindblast ; B] Firework <Br>
+2. Eggo Bag: This would allow MC to recover a bit of heath<br>
+3. Party: This would allow Dustin to play his song and it might also increse the MC's Health<br>
+4. RUN: But could you? ;)<br>
+
+NOTE: ON TOP OF PAGE THERE IS A HEADPHONE BUTTON AND THAT COULD BE YOUR HELP<br><img width="1470" height="462" alt="Screenshot 2026-06-12 at 12 54 00 PM" src="https://github.com/user-attachments/assets/fb3f3bb8-6cce-46aa-a71a-344d91e5bfd9" />
+When you will click on the headphone button...it would play the the legendary Kate Bush's Hit: Running up the hill and this would constantly reduce vecna's heath<br>
+<br>
+If you win the game, you will be teleported back to the Hawkins Lab<br>
+And if you lose, you will be forever, stuck <Br>
 
 
 
