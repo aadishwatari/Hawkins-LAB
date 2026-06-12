@@ -30,6 +30,17 @@ In total there, eight rooms:-<br>
 5. Rainbow room that has a portal that could lead to upside down and vecna<br>
 6. this room allows player to talk to people trapped in Upside down<br>
 7. This room contains all the files of children who where part of government experimenr<br>
-8. This rooms contails the the prisons (russians, you were doing experiment under the mall in season 3).<br>
+8. This rooms contails the the prisons who are asking for help but you can't help them :( (russians, you were doing experiment under the mall in season 3).<br>
 
 <h2>How to play the game</h2>
+1. Use WASD keyas or Arrow key to play <br>
+2. Your objective is to not get attacked by demogorgan. <br>
+3. If demogorgan attacts you you lose 1 heart<br>
+$. Your total heath is 3 hearts and if you lose all that you will have to go  back to the intro page <br>
+4. TIP: You can freeze demogorgan by clicking enter when it is near MC.<br>
+5. It will be frezzed for 10 sec and you can use this time to escape or explore the map <br>
+6. You can go to safe room to stop demogoran from attacking you <br>
+7. NOTE: You to other portals or outside to explore the whole game XO
+
+
+
