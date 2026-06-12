@@ -72,3 +72,19 @@ When you will go to the room, that is aside of the rainbow room, you'll find you
 Each letter has a twinkling light above it and it works like an Ojia Board to give answers to all the questions.<br>
 There is an ask anything bar where you can type your questions <br>
 To end the game you have to click on the goodbye button and you will be teleported back to the Hawkins Lab. <img width="999" height="260" alt="Screenshot 2026-06-12 at 10 19 52 PM" src="https://github.com/user-attachments/assets/baf86949-c764-4828-8b18-ced45da338b7" />
+WARNING: YOU MIGHT GET ANSWERS THAT WOULD NOT BE DESIRED (LOOK BEHIND MAYBE SOMEONE IS REALLY THERE)
+
+<H1> The experiment File </H1>
+This contains all the details about all the children who were part of experminet in the Hawkins lab<br>
+It also tell all the relevent information required about them
+<img src="001.png">
+<img src="002.png">
+<img src="003.png">
+<img src="004.png">
+<img src="005.png">
+<img src="006.png">
+<img src="007.png">
+<img src="008.png">
+<img src="009.png">
+<img src="010.png">
+<img src="011.png">
