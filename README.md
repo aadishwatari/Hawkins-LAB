@@ -16,5 +16,20 @@ This is made for #horizons
 <h1>The Starting/Intro Page </h1>
 This page contains a background of Hawkins and is covered with elements & texture that gives the vintage 80s feel to it. There is a starting button, and when you click on it, it will start to load the game and one of the Stranger things soundtracks will start playing in background. 
 <img width="1470" height="821" alt="Screenshot 2026-06-12 at 8 16 21 AM" src="https://github.com/user-attachments/assets/f85e3295-efc0-40f8-9d38-3cabb8921da8" /><img width="1470" height="830" alt="Screenshot 2026-06-12 at 11 05 50 AM" src="https://github.com/user-attachments/assets/fcae9d6c-cf17-4052-9994-ff393b0a981a" />
-<img width="1470" height="830" alt="bg.png" />
 
+<H1>The Lab Map and Demogorgan</H1>
+My plan was to design lab where the MC of the game would go through different rooms, and would be chased by a demogragan. I designed the original layout like the picture below. <img width="774" height="400" alt="layout" src="https://github.com/user-attachments/assets/b28d02a4-a323-4e33-8d60-232ea5d8d4de" />
+<br>
+The orange blocks shows the doors... there is a main door that is connected with the lobby... that leads to outside (mindflairchase)... both MC and demogorgan could not walk through walls. <img width="1098" height="843" alt="Screenshot 2026-06-04 at 10 13 13 AM" src="https://github.com/user-attachments/assets/8b556126-142b-48c9-8606-43e4e63849cf" />
+<br>
+In total there, eight rooms:-<br>
+1. The first room is the safe room where demogorgan could not enter and would be frezzed on the map. <br>
+2. The second room is black room where lights go out when you pass through it.<br>
+3. Storage room 1<br>
+4. Storage room 2<br>
+5. Rainbow room that has a portal that could lead to upside down and vecna<br>
+6. this room allows player to talk to people trapped in Upside down<br>
+7. This room contains all the files of children who where part of government experimenr<br>
+8. This rooms contails the the prisons (russians, you were doing experiment under the mall in season 3).<br>
+
+<h2>How to play the game</h2>
