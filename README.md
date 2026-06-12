@@ -15,3 +15,6 @@ This is made for #horizons
 
 <h1>The Starting/Intro Page </h1>
 This page contains a background of Hawkins and is covered with elements & texture that gives the vintage 80s feel to it. There is a starting button, and when you click on it, it will start to load the game and one of the Stranger things soundtracks will start playing in background. 
+<img width="1470" height="821" alt="Screenshot 2026-06-12 at 8 16 21 AM" src="https://github.com/user-attachments/assets/f85e3295-efc0-40f8-9d38-3cabb8921da8" />
+
+
