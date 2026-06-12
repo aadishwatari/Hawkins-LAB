@@ -58,5 +58,11 @@ When you will click on the headphone button...it would play the the legendary Ka
 If you win the game, you will be teleported back to the Hawkins Lab<br>
 And if you lose, you will be forever, stuck <Br>
 
+<h1>The Overview</h1>
+When you take an exit from the main door that is present at the lobby...you will reach the outside. Here you will be chased my the MINDFLAIR
+<br>
+This section of the game was inspired by the Google Chrome's T-rex Run game but in my version MC is being chasing by the the mindflair where also actively trying to avvoid huddles in the way. <img width="1470" height="836" alt="Screenshot 2026-06-12 at 10 06 53 PM" src="https://github.com/user-attachments/assets/16037aca-7642-4489-92ac-9c3b48f18775" />
+The MC will jump when you will use the enter button<br>
+If you got hit by an obstacle in the way...you would be killed by the Mindflair<img width="1470" height="828" alt="Screenshot 2026-06-12 at 10 07 23 PM" src="https://github.com/user-attachments/assets/6c56cd34-5b5a-4011-b114-16ac7f71f028" />
 
 
