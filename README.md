@@ -77,4 +77,14 @@ WARNING: YOU MIGHT GET ANSWERS THAT WOULD NOT BE DESIRED (LOOK BEHIND MAYBE SOME
 <H1> The experiment File </H1>
 This contains all the details about all the children who were part of experminet in the Hawkins lab<br>
 It also tell all the relevent information required about them
-<img src="001.png" width="100" height="100">
+<img src="001.png" width="300" height="300">
+<img src="002.png" width="300" height="300">
+<img src="003.png" width="300" height="300">
+<img src="004.png" width="300" height="300">
+<img src="005.png" width="300" height="300">
+<img src="006.png" width="300" height="300">
+<img src="007.png" width="300" height="300">
+<img src="008.png" width="300" height="300">
+<img src="009.png" width="300" height="300">
+<img src="010.png" width="300" height="300">
+<img src="011.png" width="300" height="300">
