@@ -64,6 +64,7 @@ When you take an exit from the main door that is present at the lobby...you will
 This section of the game was inspired by the Google Chrome's T-rex Run game but in my version MC is being chasing by the the mindflair where also actively trying to avvoid huddles in the way. <img width="1470" height="836" alt="Screenshot 2026-06-12 at 10 06 53 PM" src="https://github.com/user-attachments/assets/16037aca-7642-4489-92ac-9c3b48f18775" />
 The MC will jump when you will use the enter button<br>
 If you got hit by an obstacle in the way...you would be killed by the Mindflair<img width="1470" height="828" alt="Screenshot 2026-06-12 at 10 07 23 PM" src="https://github.com/user-attachments/assets/6c56cd34-5b5a-4011-b114-16ac7f71f028" />
+If you keep dodging the obstacles, your score will increase but if you hit the obstacle, you will be killed by Mindflair and would be teleported back to the intro page. 
 
 <h1>Talk to Upside Down World</h1>
 When you will go to the room, that is aside of the rainbow room, you'll find yourself looking at a wall that has all the letters with all the alphabets written on it.<img width="1025" height="812" alt="Screenshot 2026-06-12 at 10 19 30 PM" src="https://github.com/user-attachments/assets/077d1d28-ed86-4ad5-8a79-9a1d227c0ab6" />
